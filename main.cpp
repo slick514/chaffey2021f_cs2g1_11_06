@@ -1,24 +1,9 @@
 #include <iostream>
+#include <algorithm>
+#include "is_palindrome.h"
+
 
 using namespace std;
-
-static const char EMPTY = ' ';
-
-/**
- * Method to determine if a given phrase, with non-characters removed and disregarding capitalization, is a palendrome.
- * @param phrase The phrase to be evaluated. This reference variable will be destroyed in the process
- * @return true if the phrase is a palendrome, false if it is not
- */
-bool is_palendrome(string phrase);
-
-/**
- * Splits a phrase that is provided into a front and rear character, and a central string between them
- * @param rPhrase Original phrase. Will be altered by this function to provide the central string back to the calling
- * function
- * @param rFront reference that will contain the first character of the supplied phrase
- * @param rBack reference that will contain the last character of the supplied phrase
- */
-void split_string(string &rPhrase, char &rFront, char &rBack);
 
 /**
  * Course: Chaffey College 2021-Fall CS2
@@ -34,15 +19,15 @@ void split_string(string &rPhrase, char &rFront, char &rBack);
    whether the shorter string "Madam, I’m Adam" is a palindrome.
  */
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    string phrase = "Madam, I'm Adam!!!";
-    cout << "You entered \"" << phrase << "\"" << endl;
-    bool is_palindrome = is_palendrome(( phrase ));
-    if( is_palindrome ) {
-        cout << "That is either a palendrome, or it contained no alphanumeric characters." << endl;
-    } else {
-        cout << "That is not a palindrome." << endl;
-    }
+    bool done;
+
+    cout << "Welcome to \"Palendrome Finder\" v 11.06" << endl;
+    do {
+        string input = get_phrase_from_user();
+        print_output(is_palendrome(( input )));
+        done = check_is_user_done();
+    } while( !done );
+    cout << "Goodbye";
     return 0;
 }
 
@@ -53,6 +38,37 @@ bool is_palendrome(string phrase) {
     char back = EMPTY;
     split_string(phrase, front, back);
     return ( toupper(front) == toupper(back)) && ( is_palendrome(phrase));
+}
+
+bool check_is_user_done() {
+    string input;
+    cout << "Do you have another palindrome to test? [(Y)es/(N)o]: " << endl;
+    cin >> input;
+    return !input.empty() && tolower(input[0]) != 'y';
+}
+
+void print_output(bool is_palindrome) {
+    cout << "That is " << ( is_palindrome ? "" : "not " ) << "a palendrome." << endl;
+}
+
+string get_phrase_from_user() {
+    bool valid_phrase;
+    string input;
+    do {
+        cout << "Please enter a phrase to evaluate:" << endl;
+        getline(cin, input);
+        valid_phrase = validate_alnum(input);
+        if( !valid_phrase )
+            cout << "Invalid entry: \"" << input << "\" has no alphanumeric characters to evaluate." << endl;
+    } while( !valid_phrase );
+    cout << "You entered \"" << input << "\"" << endl;
+    return input;
+}
+
+bool validate_alnum(const string &input) {
+    return std::any_of(input.begin(), input.end(), ::isalnum);
+    // This would also work:
+    // return std::any_of(input.begin(), input.end(), [](const char &c) { return isalnum(c);});
 }
 
 void split_string(string &rPhrase, char &rFront, char &rBack) {
@@ -68,7 +84,7 @@ void split_string(string &rPhrase, char &rFront, char &rBack) {
     if( rPhrase.empty())
         return; // phrase had no more than 1 alphanumeric character.
 
-    for( int i = rPhrase.length() - 1; i >= 0; i-- ) {
+    for( int i = (int)rPhrase.length() - 1; i >= 0; i-- ) {
         if( isalnum(rPhrase[i])) {
             back = rPhrase[i];
             rPhrase.erase(i, rPhrase.length() - 1);
